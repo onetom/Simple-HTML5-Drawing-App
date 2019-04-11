@@ -87,21 +87,23 @@ var drawingApp = (function () {
 			});
 
 			var press = function (e) {
-				var mouseX = e.pageX - this.offsetLeft,
-					mouseY = e.pageY - this.offsetTop;
+				const mouseX = (e.changedTouches ? e.changedTouches[0].pageX : e.pageX) - this.offsetLeft
+				const mouseY = (e.changedTouches ? e.changedTouches[0].pageY : e.pageY) - this.offsetTop
 
 				paint = true;
 				addClick(mouseX, mouseY, false);
 				redraw();
 			};
 			var drag = function (e) {
-				var mouseX = e.pageX - this.offsetLeft,
-					mouseY = e.pageY - this.offsetTop;
+				const mouseX = (e.changedTouches ? e.changedTouches[0].pageX : e.pageX) - this.offsetLeft
+				const mouseY = (e.changedTouches ? e.changedTouches[0].pageY : e.pageY) - this.offsetTop
 
 				if (paint) {
 					addClick(mouseX, mouseY, true);
 					redraw();
 				}
+				// Prevent the whole page from dragging if on mobile
+				e.preventDefault();
 			};
 			var release = function () {
 				paint = false;
@@ -115,6 +117,12 @@ var drawingApp = (function () {
 			canvas.addEventListener("mousemove", drag, false);
 			canvas.addEventListener("mouseup", release);
 			canvas.addEventListener("mouseout", cancel, false);
+
+			// Add touch event listeners to canvas element
+			canvas.addEventListener("touchstart", press, false);
+			canvas.addEventListener("touchmove", drag, false);
+			canvas.addEventListener("touchend", release, false);
+			canvas.addEventListener("touchcancel", cancel, false);
 		},
 
 		init = function () {
@@ -123,9 +131,6 @@ var drawingApp = (function () {
 			canvas.setAttribute('height', canvasHeight);
 			canvas.setAttribute('id', 'canvas');
 			canvas.style.border = "1px solid black";
-			if (typeof G_vmlCanvasManager !== "undefined") {
-				canvas = G_vmlCanvasManager.initElement(canvas);
-			}
 			context = canvas.getContext("2d");
 
 			redraw();
